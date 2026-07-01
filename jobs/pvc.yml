@@ -1,0 +1,17 @@
+# Persistent disk that lives on the cluster and survives between pods/jobs.
+# Your data + trained models + plots will live here.
+# Apply with:  kubectl apply -f pvc.yml -n <your-namespace>
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: higgs-vol
+spec:
+  accessModes:
+    - ReadWriteOnce            # one pod at a time — fine for now
+  resources:
+    requests:
+      storage: 20Gi            # plenty for ~66MB data + models/plots
+  # IMPORTANT: the class name below may differ on your region of NRP.
+  # If the PVC gets stuck in STATUS=Pending, that's almost always this line.
+  # Run `kubectl get storageclass` and pick a block storage class.
+  storageClassName: rook-ceph-block

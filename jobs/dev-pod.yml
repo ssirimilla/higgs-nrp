@@ -1,0 +1,30 @@
+# Interactive CPU pod with your PVC mounted at /data.
+# No GPU on purpose: EBM / pyGAM / XGBoost on 250k rows is CPU work,
+# and CPU pods schedule much faster than GPU pods on a shared cluster.
+# Apply with:  kubectl apply -f dev-pod.yml -n <your-namespace>
+apiVersion: v1
+kind: Pod
+metadata:
+  name: higgs-dev
+spec:
+  containers:
+    - name: dev
+      # Already has pandas, numpy, scipy, scikit-learn, jupyterlab.
+      # You'll pip-install xgboost / interpret / pygam after you exec in.
+      image: quay.io/jupyter/scipy-notebook:latest
+      command: ["sleep", "infinity"]   # stay up so you can shell in and iterate
+      volumeMounts:
+        - name: higgs-vol
+          mountPath: /data
+      resources:
+        limits:
+          memory: 16Gi
+          cpu: "8"
+        requests:
+          memory: 8Gi
+          cpu: "4"
+  volumes:
+    - name: higgs-vol
+      persistentVolumeClaim:
+        claimName: higgs-vol
+  restartPolicy: Never
